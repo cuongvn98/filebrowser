@@ -18,11 +18,6 @@ build:
     - darwin
     - linux
     - windows
-    - freebsd
-    - netbsd
-    - openbsd
-    - dragonfly
-    - solaris
   goarch:
     - amd64
     - 386
@@ -100,8 +95,8 @@ dockers:
     goarch: amd64
     goarm: ''
     image_templates:
-      - "filebrowser/filebrowser:debian"
-      - "filebrowser/filebrowser:{{ .Tag }}-debian"
-      - "filebrowser/filebrowser:v{{ .Major }}-debian"
+      - "hirosume/filebrowser:debian"
+      - "hirosume/filebrowser:{{ .Tag }}-debian"
+      - "hirosume/filebrowser:v{{ .Major }}-debian"
     extra_files:
       - .docker.json
