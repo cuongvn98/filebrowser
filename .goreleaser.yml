@@ -61,9 +61,9 @@ dockers:
     goarch: amd64
     goarm: ''
     image_templates:
-      - "filebrowser/filebrowser:latest"
-      - "filebrowser/filebrowser:{{ .Tag }}"
-      - "filebrowser/filebrowser:v{{ .Major }}"
+      - "hirosume/filebrowser:latest"
+      - "hirosume/filebrowser:{{ .Tag }}"
+      - "hirosume/filebrowser:v{{ .Major }}"
     extra_files:
       - .docker.json
   -
@@ -74,9 +74,9 @@ dockers:
     goarch: arm
     goarm: '5'
     image_templates:
-      - "filebrowser/filebrowser:pi"
-      - "filebrowser/filebrowser:{{ .Tag }}-pi"
-      - "filebrowser/filebrowser:v{{ .Major }}-pi"
+      - "hirosume/filebrowser:pi"
+      - "hirosume/filebrowser:{{ .Tag }}-pi"
+      - "hirosume/filebrowser:v{{ .Major }}-pi"
     extra_files:
       - .docker.json
   -
@@ -87,9 +87,9 @@ dockers:
     goarch: amd64
     goarm: ''
     image_templates:
-      - "filebrowser/filebrowser:alpine"
-      - "filebrowser/filebrowser:{{ .Tag }}-alpine"
-      - "filebrowser/filebrowser:v{{ .Major }}-alpine"
+      - "hirosume/filebrowser:alpine"
+      - "hirosume/filebrowser:{{ .Tag }}-alpine"
+      - "hirosume/filebrowser:v{{ .Major }}-alpine"
     extra_files:
       - .docker.json
   -
