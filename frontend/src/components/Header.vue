@@ -1,7 +1,8 @@
 <template>
   <header v-if="!isEditor && !isPreview">
     <div>
-      <button @click="openSidebar" :aria-label="$t('buttons.toggleSidebar')" :title="$t('buttons.toggleSidebar')" class="action">
+      <button @click="openSidebar" :aria-label="$t('buttons.toggleSidebar')" :title="$t('buttons.toggleSidebar')"
+              class="action">
         <i class="material-icons">menu</i>
       </button>
       <img :src="logoURL" alt="File Browser">
@@ -9,7 +10,8 @@
     </div>
     <div>
       <template v-if="isLogged">
-        <button @click="openSearch" :aria-label="$t('buttons.search')" :title="$t('buttons.search')" class="search-button action">
+        <button @click="openSearch" :aria-label="$t('buttons.search')" :title="$t('buttons.search')"
+                class="search-button action">
           <i class="material-icons">search</i>
         </button>
 
@@ -33,17 +35,19 @@
             <share-button v-show="showShareButton"></share-button>
             <rename-button v-show="showRenameButton"></rename-button>
             <copy-button v-show="showCopyButton"></copy-button>
+            <copy-png-link-button v-show="showCopyPNG"></copy-png-link-button>
             <move-button v-show="showMoveButton"></move-button>
             <delete-button v-show="showDeleteButton"></delete-button>
           </div>
 
-          <shell-button v-if="isExecEnabled && user.perm.execute" />
+          <shell-button v-if="isExecEnabled && user.perm.execute"/>
           <switch-button v-show="isListing"></switch-button>
           <download-button v-show="showDownloadButton"></download-button>
           <upload-button v-show="showUpload"></upload-button>
           <info-button v-show="isFiles"></info-button>
 
-          <button v-show="isListing" @click="toggleMultipleSelection" :aria-label="$t('buttons.selectMultiple')" :title="$t('buttons.selectMultiple')" class="action" >
+          <button v-show="isListing" @click="toggleMultipleSelection" :aria-label="$t('buttons.selectMultiple')"
+                  :title="$t('buttons.selectMultiple')" class="action">
             <i class="material-icons">check_circle</i>
             <span>{{ $t('buttons.select') }}</span>
           </button>
@@ -65,10 +69,11 @@ import DownloadButton from './buttons/Download'
 import SwitchButton from './buttons/SwitchView'
 import MoveButton from './buttons/Move'
 import CopyButton from './buttons/Copy'
+import CopyPngLinkButton from './buttons/CopyPNGLink'
 import ShareButton from './buttons/Share'
 import ShellButton from './buttons/Shell'
 import {mapGetters, mapState} from 'vuex'
-import { logoURL, enableExec } from '@/utils/constants'
+import {enableExec, logoURL} from '@/utils/constants'
 import * as api from '@/api'
 import buttons from '@/utils/buttons'
 
@@ -85,7 +90,8 @@ export default {
     UploadButton,
     SwitchButton,
     MoveButton,
-    ShellButton
+    ShellButton,
+    CopyPngLinkButton,
   },
   data: function () {
     return {
@@ -98,7 +104,7 @@ export default {
       }
     }
   },
-  created () {
+  created() {
     window.addEventListener('resize', () => {
       this.width = window.innerWidth
     })
@@ -121,62 +127,67 @@ export default {
     ]),
     logoURL: () => logoURL,
     isExecEnabled: () => enableExec,
-    isMobile () {
+    isMobile() {
       return this.width <= 736
     },
-    showUpload () {
+    showUpload() {
       return this.isListing && this.user.perm.create
     },
-    showDownloadButton () {
+    showDownloadButton() {
       return this.isFiles && this.user.perm.download
     },
-    showDeleteButton () {
+    showDeleteButton() {
       return this.isFiles && (this.isListing
-        ? (this.selectedCount !== 0 && this.user.perm.delete)
-        : this.user.perm.delete)
+          ? (this.selectedCount !== 0 && this.user.perm.delete)
+          : this.user.perm.delete)
     },
-    showRenameButton () {
+    showRenameButton() {
       return this.isFiles && (this.isListing
-        ? (this.selectedCount === 1 && this.user.perm.rename)
-        : this.user.perm.rename)
+          ? (this.selectedCount === 1 && this.user.perm.rename)
+          : this.user.perm.rename)
     },
-    showShareButton () {
+    showShareButton() {
       return this.isFiles && (this.isListing
-        ? (this.selectedCount === 1 && this.user.perm.share)
-        : this.user.perm.share)
+          ? (this.selectedCount === 1 && this.user.perm.share)
+          : this.user.perm.share)
     },
-    showMoveButton () {
+    showMoveButton() {
       return this.isFiles && (this.isListing
-        ? (this.selectedCount > 0 && this.user.perm.rename)
-        : this.user.perm.rename)
+          ? (this.selectedCount > 0 && this.user.perm.rename)
+          : this.user.perm.rename)
     },
-    showCopyButton () {
+    showCopyButton() {
       return this.isFiles && (this.isListing
-        ? (this.selectedCount > 0 && this.user.perm.create)
-        : this.user.perm.create)
+          ? (this.selectedCount > 0 && this.user.perm.create)
+          : this.user.perm.create)
     },
-    showMore () {
+    showMore() {
       return this.isFiles && this.$store.state.show === 'more'
     },
-    showOverlay () {
+    showOverlay() {
       return this.showMore
+    },
+    showCopyPNG() {
+      return this.isFiles && (this.isListing
+          ? (this.selectedCount === 1 && this.user.perm.share)
+          : this.user.perm.share)
     }
   },
   methods: {
-    openSidebar () {
+    openSidebar() {
       this.$store.commit('showHover', 'sidebar')
     },
-    openMore () {
+    openMore() {
       this.$store.commit('showHover', 'more')
     },
-    openSearch () {
+    openSearch() {
       this.$store.commit('showHover', 'search')
     },
-    toggleMultipleSelection () {
+    toggleMultipleSelection() {
       this.$store.commit('multiple', !this.multiple)
       this.resetPrompts()
     },
-    resetPrompts () {
+    resetPrompts() {
       this.$store.commit('closeHovers')
     }
   }
