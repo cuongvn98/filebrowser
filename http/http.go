@@ -35,6 +35,7 @@ func NewHandler(imgSvc ImgService, fileCache FileCache, store *storage.Storage, 
 	api := r.PathPrefix("/api").Subrouter()
 
 	api.Handle("/login", monkey(loginHandler, ""))
+	api.Handle("/login/inet", monkey(loginWithINETHandler, ""))
 	api.Handle("/signup", monkey(signupHandler, ""))
 	api.Handle("/renew", monkey(renewHandler, ""))
 

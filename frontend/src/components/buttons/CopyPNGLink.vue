@@ -1,14 +1,13 @@
 <template>
   <button @click="copy" :aria-label="$t('buttons.copyPNGLink')" :title="$t('buttons.copyPNGLink')" class="action"
           id="copy-png-link-button">
-    <i class="material-icons">content_copy</i>
+    <i class="material-icons">chrome_reader_mode</i>
     <span>{{ $t('buttons.copyPNGLink') }}</span>
   </button>
 </template>
 
 <script>
 import {mapState} from "vuex";
-
 export default {
   name: 'copy-png-link-button',
   computed: mapState(['req', 'selected']),

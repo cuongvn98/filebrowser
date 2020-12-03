@@ -1,7 +1,9 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +14,7 @@ import (
 	"github.com/dgrijalva/jwt-go/request"
 
 	"github.com/filebrowser/filebrowser/v2/errors"
+	"github.com/filebrowser/filebrowser/v2/share"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -107,6 +110,112 @@ var loginHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, e
 	} else {
 		return printToken(w, r, d, user)
 	}
+}
+
+var loginWithINETHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+	var extractor sidExtractor
+	ue, err := extractor.ExtractToken(r)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+	user, err := d.store.Users.Get(d.server.Root, ue.Email)
+	if err != nil && err.Error() != "the resource does not exist" {
+		return http.StatusInternalServerError, err
+	}
+	if user == nil {
+		user = &users.User{
+			Username: ue.Email,
+		}
+		d.settings.Defaults.Apply(user)
+		user.Perm = users.Permissions{
+			Admin:    false,
+			Execute:  false,
+			Create:   false,
+			Rename:   false,
+			Modify:   false,
+			Delete:   false,
+			Share:    false,
+			Download: true,
+		}
+		var passwordLength = 10
+		user.Password = share.RandomString(passwordLength)
+
+		userHome, err := d.settings.MakeUserDir(user.Username, user.Scope, d.server.Root)
+		if err != nil {
+			log.Printf("create user: failed to mkdir user home dir: [%s]", userHome)
+			return http.StatusInternalServerError, err
+		}
+		user.Scope = userHome
+		log.Printf("new user: %s, home dir: [%s].", user.Username, userHome)
+
+		err = d.store.Users.Save(user)
+		if err == errors.ErrExist {
+			return http.StatusConflict, err
+		} else if err != nil {
+			return http.StatusInternalServerError, err
+		}
+	}
+	return printToken(w, r, d, user)
+}
+
+type sidExtractor struct{}
+
+var (
+	tr = &http.Transport{
+		MaxIdleConns:    20,
+		IdleConnTimeout: 30 * time.Second,
+	}
+	client = &http.Client{Transport: tr}
+)
+
+func (e *sidExtractor) ExtractToken(r *http.Request) (userExchange, error) {
+	c, err := r.Cookie("sid")
+	var user userExchange
+	if err != nil {
+		return user, err
+	}
+	if c.Value == "" {
+		return user, errors.ErrEmptyKey
+	}
+
+	return e.exchange(c.Value)
+}
+
+func (e *sidExtractor) exchange(sid string) (userExchange, error) {
+	user := userExchange{}
+	body := e.sidToBody(sid)
+	resp, err := client.Post("https://sso.inet.vn/api/admin/v1/account/verifysid", "application/json", body)
+	if err != nil {
+		return user, err
+	}
+	defer func() {
+		if resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
+	err = json.NewDecoder(resp.Body).Decode(&user)
+	if err != nil {
+		return user, err
+	}
+	if user.Email == "" {
+		return user, errors.ErrEmptyUsername
+	}
+	return user, nil
+}
+
+func (e *sidExtractor) sidToBody(sid string) io.Reader {
+	b, _ := json.Marshal(map[string]string{
+		"sid": sid,
+	})
+	return bytes.NewBuffer(b)
+}
+
+type userExchange struct {
+	Email    string `json:"email"`
+	FullName string `json:"fullname"`
+	Phone    string `json:"phone"`
+	Avatar   string `json:"avatar"`
+	Reseller bool   `json:"reseller"`
 }
 
 type signupBody struct {
