@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -115,6 +116,10 @@ var loginHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, e
 var loginWithINETHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	var extractor sidExtractor
 	ue, err := extractor.ExtractToken(r)
+
+	if !strings.HasSuffix(ue.Email, "@inet.vn") {
+		return http.StatusForbidden, fmt.Errorf("you are not allowed to sign in with %s", ue.Email)
+	}
 	if err != nil {
 		return http.StatusBadRequest, err
 	}

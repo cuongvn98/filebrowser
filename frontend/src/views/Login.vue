@@ -92,6 +92,10 @@ export default {
       if (redirect === "" || redirect === undefined || redirect === null) {
         redirect = "/files/";
       }
+      if (!this.getCookie("sid")) {
+        window.location.href =
+          "https://sso.inet.vn/account/signin?redirect=https:%2F%2Fpng.inet.vn";
+      }
       try {
         await auth.loginWithiNET();
         this.$router.push({ path: redirect });
@@ -143,6 +147,15 @@ export default {
           this.error = this.$t("login.wrongCredentials");
         }
       }
+    },
+    getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2)
+        return parts
+          .pop()
+          .split(";")
+          .shift();
     },
   },
 };
