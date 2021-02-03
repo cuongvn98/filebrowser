@@ -9,10 +9,11 @@ import (
 )
 
 var withHashFile = func(fn handleFunc) handleFunc {
+	deepAllowed := 3
 	return func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 		rawPath := r.URL.Path
 		splited := strings.Split(r.URL.Path, "/")
-		if len(splited) == 3 {
+		if len(splited) == deepAllowed {
 			r.URL.Path = strings.Join(splited[:2], "/")
 		}
 		link, err := d.store.Share.GetByHash(r.URL.Path)
@@ -31,7 +32,7 @@ var withHashFile = func(fn handleFunc) handleFunc {
 
 		d.user = user
 
-		if len(splited) == 3 {
+		if len(splited) == deepAllowed {
 			link.Path = filepath.Join(link.Path, splited[2])
 		}
 
