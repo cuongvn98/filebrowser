@@ -2,7 +2,7 @@ module github.com/filebrowser/filebrowser/v2
 
 require (
 	github.com/DataDog/zstd v1.4.0 // indirect
-	github.com/GeertJohan/go.rice v1.0.0
+	github.com/GeertJohan/go.rice v1.0.2
 	github.com/Sereal/Sereal v0.0.0-20190430203904-6faf9605eb56 // indirect
 	github.com/asdine/storm v2.1.2+incompatible
 	github.com/caddyserver/caddy v1.0.3

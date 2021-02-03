@@ -1,27 +1,27 @@
 <template>
   <div class="share" v-if="loaded">
     <div class="share__box share__box__info">
-        <div class="share__box__header">
-          {{ file.isDir ? $t('download.downloadFolder') : $t('download.downloadFile') }}
-        </div>
-        <div class="share__box__element share__box__center share__box__icon">
-          <i class="material-icons">{{ file.isDir ? 'folder' : 'insert_drive_file'}}</i>
-        </div>
-        <div class="share__box__element">
-          <strong>{{ $t('prompts.displayName') }}</strong> {{ file.name }}
-        </div>
-        <div class="share__box__element">
-          <strong>{{ $t('prompts.lastModified') }}:</strong> {{ humanTime }}
-        </div>
-        <div class="share__box__element">
-          <strong>{{ $t('prompts.size') }}:</strong> {{ humanSize }}
-        </div>
-        <div class="share__box__element share__box__center">
-          <a target="_blank" :href="link" class="button button--flat">{{ $t('buttons.download') }}</a>
-        </div>
-        <div class="share__box__element share__box__center">
-          <qrcode-vue :value="fullLink" size="200" level="M"></qrcode-vue>
-        </div>
+      <div class="share__box__header">
+        {{ file.isDir ? $t('download.downloadFolder') : $t('download.downloadFile') }}
+      </div>
+      <div class="share__box__element share__box__center share__box__icon">
+        <i class="material-icons">{{ file.isDir ? 'folder' : 'insert_drive_file' }}</i>
+      </div>
+      <div class="share__box__element">
+        <strong>{{ $t('prompts.displayName') }}</strong> {{ file.name }}
+      </div>
+      <div class="share__box__element">
+        <strong>{{ $t('prompts.lastModified') }}:</strong> {{ humanTime }}
+      </div>
+      <div class="share__box__element">
+        <strong>{{ $t('prompts.size') }}:</strong> {{ humanSize }}
+      </div>
+      <div class="share__box__element share__box__center">
+        <a target="_blank" :href="parentLink()" class="button button--flat">{{ $t('buttons.download') }}</a>
+      </div>
+      <div class="share__box__element share__box__center">
+        <qrcode-vue :value="fullLink" size="200" level="M"></qrcode-vue>
+      </div>
     </div>
     <div v-if="file.isDir" class="share__box share__box__items">
       <div class="share__box__header" v-if="file.isDir">
@@ -30,10 +30,14 @@
       <div id="listing" class="list">
         <div class="item" v-for="(item) in file.items.slice(0, this.showLimit)" :key="base64(item.name)">
           <div>
-            <i class="material-icons">{{ item.isDir ? 'folder' : (item.type==='image') ? 'insert_photo' : 'insert_drive_file' }}</i>
+            <i class="material-icons">{{
+                item.isDir ? 'folder' : (item.type === 'image') ? 'insert_photo' : 'insert_drive_file'
+              }}</i>
           </div>
           <div>
-            <p class="name">{{ item.name }}</p>
+            <a :href="childLink(item.name)">
+              <p class="name">{{ item.name }}</p>
+            </a>
           </div>
         </div>
         <div v-if="file.items.length > showLimit" class="item">
@@ -47,8 +51,8 @@
 </template>
 
 <script>
-import { share as api } from '@/api'
-import { baseURL } from '@/utils/constants'
+import {share as api} from '@/api'
+import {baseURL} from '@/utils/constants'
 import filesize from 'filesize'
 import moment from 'moment'
 import QrcodeVue from 'qrcode.vue'
@@ -102,6 +106,12 @@ export default {
       } catch (e) {
         this.notFound = true
       }
+    },
+    childLink(name) {
+      return this.link + '/' + name + '?inline=true'
+    },
+    parentLink() {
+      return this.link + '?inline=true'
     }
   }
 }

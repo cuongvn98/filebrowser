@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/filebrowser/filebrowser/v2/files"
@@ -9,6 +10,11 @@ import (
 
 var withHashFile = func(fn handleFunc) handleFunc {
 	return func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+		rawPath := r.URL.Path
+		splited := strings.Split(r.URL.Path, "/")
+		if len(splited) == 3 {
+			r.URL.Path = strings.Join(splited[:2], "/")
+		}
 		link, err := d.store.Share.GetByHash(r.URL.Path)
 		if err != nil {
 			link, err = d.store.Share.GetByHash(ifPathWithName(r))
@@ -16,6 +22,7 @@ var withHashFile = func(fn handleFunc) handleFunc {
 				return errToStatus(err), err
 			}
 		}
+		r.URL.Path = rawPath
 
 		user, err := d.store.Users.Get(d.server.Root, link.UserID)
 		if err != nil {
@@ -23,6 +30,10 @@ var withHashFile = func(fn handleFunc) handleFunc {
 		}
 
 		d.user = user
+
+		if len(splited) == 3 {
+			link.Path = filepath.Join(link.Path, splited[2])
+		}
 
 		file, err := files.NewFileInfo(files.FileOptions{
 			Fs:      d.user.Fs,
